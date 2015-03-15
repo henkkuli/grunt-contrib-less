@@ -17,6 +17,7 @@ var less = require('less');
 module.exports = function(grunt) {
   grunt.registerMultiTask('less', 'Compile LESS files to CSS', function() {
     var done = this.async();
+    var target = this.target;
 
     var options = this.options({
       banner: ''
@@ -59,7 +60,7 @@ module.exports = function(grunt) {
         compileLess(file, destFile, options)
           .then(function(output) {
             compiled.push(output.css);
-            grunt.event.emit('less.compiled', output);
+            grunt.event.emit('less.compiled', target, output);
             if (options.sourceMap && !options.sourceMapFileInline) {
               var sourceMapFilename = options.sourceMapFilename;
               if (!sourceMapFilename) {
@@ -71,15 +72,15 @@ module.exports = function(grunt) {
             process.nextTick(next);
           },
           function(err) {
-            grunt.event.emit('less.error', err);
+            grunt.event.emit('less.error', target, err);
             nextFileObj(err);
           });
       }, function() {
         if (compiled.length < 1) {
-          grunt.event.emit('less.destempty', destFile);
+          grunt.event.emit('less.destempty', target, destFile);
           grunt.log.warn('Destination ' + chalk.cyan(destFile) + ' not written because compiled files were empty.');
         } else {
-          grunt.event.emit('less.writing', compiled);
+          grunt.event.emit('less.writing', target, compiled);
           var allCss = compiled.join(options.compress ? '' : grunt.util.normalizelf(grunt.util.linefeed));
           grunt.file.write(destFile, allCss);
           grunt.log.writeln('File ' + chalk.cyan(destFile) + ' created');
